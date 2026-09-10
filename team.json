@@ -1,0 +1,21 @@
+{
+  "members": [
+    { "name": "Halime Ravza Fidan", "title": "Genel Sekreter", "dept": "Yönetim" },
+    { "name": "Duru Eren", "title": "Genel Direktör", "dept": "Yönetim" },
+    { "name": "Kerem Yiğit Ateşoğlu", "title": "Genel Sekreter Muavini", "dept": "Yönetim" },
+    { "name": "Mustafa Said Keşli", "title": "Genel Direktör Muavini", "dept": "Yönetim" },
+    { "name": "İrem Naz Özyurt", "title": "Finans Başkanı", "dept": "Finans" },
+    { "name": "Yağmur Çelik", "title": "Finans Başkan Muavini", "dept": "Finans" },
+    { "name": "Yavuz Rüzgar Sönmez", "title": "Güvenlik Başkanı", "dept": "Güvenlik" },
+    { "name": "Berra Genç", "title": "PR Başkanı", "dept": "PR" },
+    { "name": "Bartu Oktay", "title": "PR Başkan Muavini", "dept": "PR" },
+    { "name": "Yusuf Eren Bildik", "title": "PR Başkan Muavini", "dept": "PR" },
+    { "name": "İrfan Deniz Canseven", "title": "IT Başkanı", "dept": "IT" },
+    { "name": "Muhsin Ahmet Yıldız", "title": "IT Başkan Muavini", "dept": "IT" },
+    { "name": "Mehmet Efe Öçal", "title": "IT Başkan Muavini", "dept": "IT" },
+    { "name": "Oğuz Akar", "title": "Lojistik Başkanı", "dept": "Lojistik" },
+    { "name": "Ahmet Alp Köroğlu", "title": "Lojistik Başkanı", "dept": "Lojistik" },
+    { "name": "Kuzeyhan Güler", "title": "Admin Başkanı", "dept": "Admin" },
+    { "name": "Hasan Taha Şahin", "title": "Admin Başkan Muavini", "dept": "Admin" }
+  ]
+}

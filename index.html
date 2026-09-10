@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HASAL27 - Parliament</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Avenir';
+      src: local('Avenir Next'), local('Avenir Next Bold'), local('Avenir'), local('Avenir Bold');
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html {
+      overflow-x: hidden;
+    }
+    body { background: #000; font-family: 'Inter', 'Avenir', 'Segoe UI', sans-serif; }
+
+    canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(16px, 3vw, 40px);
+      height: 64px;
+      background: rgba(10, 10, 10, 0.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.3s ease;
+    }
+
+    .navbar-brand {
+      font-family: 'Avenir', 'Inter', sans-serif;
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: #fff;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+    }
+
+    .navbar-links {
+      display: flex;
+      gap: clamp(12px, 2.5vw, 32px);
+      list-style: none;
+    }
+
+    .navbar-links a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      padding: 6px 0;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .navbar-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%;
+      width: 0; height: 2px;
+      background: #8b2e3d;
+      transition: width 0.3s ease, left 0.3s ease;
+      border-radius: 1px;
+    }
+
+    .navbar-links a:hover,
+    .navbar-links a.active {
+      color: #fff;
+    }
+
+    .navbar-links a:hover::after,
+    .navbar-links a.active::after {
+      width: 100%;
+      left: 0;
+    }
+
+    .navbar-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+      z-index: 210;
+    }
+
+    .navbar-hamburger span {
+      display: block;
+      width: 24px; height: 2px;
+      background: #fff;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .navbar-mobile {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      background: rgba(10, 10, 10, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      z-index: 199;
+    }
+
+    .navbar-mobile.open {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .navbar-mobile a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      transition: color 0.3s ease;
+    }
+
+    .navbar-mobile a:last-child { border-bottom: none; }
+    .navbar-mobile a:hover { color: #fff; }
+
+    /* ── Sections ── */
+    .scroll-container {
+      position: relative;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    #about {
+      height: 280vh;
+    }
+
+    .section {
+      height: 200vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .section-label {
+      color: rgba(255,255,255,0.35);
+      font-size: clamp(0.7rem, 1.5vw, 0.85rem);
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 0 20px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .section-label.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      height: 100vh;
+      pointer-events: auto;
+      padding: 0 20px;
+    }
+
+    .hero-card {
+      background: rgba(20, 20, 20, 0.55);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: clamp(2.5rem, 6vw, 4.5rem) clamp(2.5rem, 7vw, 5.5rem);
+      text-align: center;
+      max-width: 820px;
+      width: 100%;
+      box-shadow: 0 8px 60px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: translateY(30px) scale(0.97);
+      animation: heroCardIn 1s ease 0.2s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Avenir', 'Inter', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.4rem, 7vw, 5rem);
+      color: #fff;
+      letter-spacing: 0.04em;
+      line-height: 1.05;
+      text-shadow: 0 4px 30px rgba(0,0,0,0.6);
+      margin-bottom: 0.35em;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(0.8rem, 2.2vw, 1.2rem);
+      color: rgba(255,255,255,0.75);
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.25em;
+    }
+
+    .hero-date {
+      font-size: clamp(0.95rem, 2.8vw, 1.5rem);
+      color: rgba(255,255,255,0.55);
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      margin-bottom: 2em;
+    }
+
+    .hero-btn {
+      pointer-events: auto;
+      position: relative;
+      display: inline-block;
+      padding: 16px 52px;
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(135deg, #6b1d2a 0%, #8b2e3d 50%, #a33b4f 100%);
+      border: none;
+      border-radius: 60px;
+      cursor: pointer;
+      text-decoration: none;
+      overflow: hidden;
+      transition: all 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow:
+        0 4px 20px rgba(107,29,42,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.15),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+    }
+
+    .hero-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .hero-btn::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 58px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero-btn:hover {
+      transform: translateY(-3px) scale(1.06);
+      box-shadow:
+        0 8px 35px rgba(107,29,42,0.55),
+        0 0 60px rgba(163,59,79,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+      background: linear-gradient(135deg, #7d2433 0%, #9e3548 50%, #b84560 100%);
+    }
+
+    .hero-btn:hover::before { left: 100%; }
+
+    .hero-btn:active {
+      transform: translateY(0) scale(0.98);
+      box-shadow: 0 2px 12px rgba(107,29,42,0.4);
+    }
+
+    .hero-btn span { position: relative; z-index: 1; }
+
+    @keyframes heroCardIn {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ── Progress ── */
+    #progress-bar {
+      position: fixed;
+      top: 64px; left: 0;
+      height: 3px;
+      background: #6b1d2a;
+      z-index: 100;
+      transition: width 0.1s linear;
+    }
+
+    #scroll-hint {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.85rem;
+      text-align: center;
+      animation: bounce 2s infinite;
+      transition: opacity 0.5s ease;
+    }
+
+    #scroll-hint span {
+      display: block;
+      font-size: 1.5rem;
+      margin-top: 4px;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    /* ── About / Letter ── */
+    .about-scene {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      perspective: 1200px;
+    }
+
+    .envelope {
+      position: relative;
+      width: clamp(340px, 48vw, 560px);
+      aspect-ratio: 1.5 / 1;
+      transform-style: preserve-3d;
+    }
+
+    .envelope-body {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(175deg, #d4b87a 0%, #c4a05a 40%, #b8944f 100%);
+      border-radius: 4px 4px 8px 8px;
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.1),
+        0 8px 24px rgba(0,0,0,0.2),
+        0 20px 60px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+      overflow: hidden;
+    }
+
+    .envelope-body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 8px,
+          rgba(0,0,0,0.015) 8px,
+          rgba(0,0,0,0.015) 9px
+        ),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 8px,
+          rgba(0,0,0,0.01) 8px,
+          rgba(0,0,0,0.01) 9px
+        );
+      pointer-events: none;
+    }
+
+    .envelope-inner-v {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: calc(clamp(340px, 48vw, 560px) / 2) solid transparent;
+      border-right: calc(clamp(340px, 48vw, 560px) / 2) solid transparent;
+      border-top: calc(clamp(340px, 48vw, 560px) / 3) solid #c9a96e;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 55%;
+      transform-origin: top center;
+      transform: rotateX(0deg);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .envelope-flap-face {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(185deg, #dbbf82 0%, #c9a96e 60%, #b8944f 100%);
+      clip-path: polygon(0 0, 50% 100%, 100% 0);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+
+    .envelope-flap-face::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 40%);
+      clip-path: polygon(0 0, 50% 100%, 100% 0);
+    }
+
+    .wax-seal {
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: clamp(48px, 7vw, 68px);
+      height: clamp(48px, 7vw, 68px);
+      border-radius: 50%;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .wax-seal-outer {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 35%, #c0392b 0%, #96281b 50%, #6b1d12 100%);
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.4),
+        0 4px 12px rgba(107,29,18,0.3),
+        inset 0 2px 4px rgba(255,255,255,0.15),
+        inset 0 -2px 4px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wax-seal-outer::before {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.12);
+    }
+
+    .wax-seal-outer::after {
+      content: '';
+      position: absolute;
+      top: 15%;
+      left: 25%;
+      width: 35%;
+      height: 20%;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+      transform: rotate(-20deg);
+      filter: blur(4px);
+    }
+
+    .wax-seal-text {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(0.9rem, 1.8vw, 1.3rem);
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.05em;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      z-index: 1;
+      display: none;
+    }
+
+    .wax-seal-logo {
+      width: 70%;
+      height: 70%;
+      object-fit: contain;
+      border-radius: 50%;
+      filter: brightness(1.1) drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    }
+
+    .wax-seal-crack {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .wax-seal-crack::before {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 48%;
+      width: 4%;
+      height: 80%;
+      background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(30,10,5,0.6) 20%,
+        rgba(30,10,5,0.8) 50%,
+        rgba(30,10,5,0.6) 80%,
+        transparent 100%
+      );
+      transform: rotate(5deg);
+    }
+
+    .wax-seal-crack::after {
+      content: '';
+      position: absolute;
+      top: 30%;
+      left: 20%;
+      width: 60%;
+      height: 3%;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(30,10,5,0.5) 30%,
+        rgba(30,10,5,0.7) 50%,
+        rgba(30,10,5,0.5) 70%,
+        transparent 100%
+      );
+      transform: rotate(-8deg);
+    }
+
+    .letter {
+      position: absolute;
+      left: 50%;
+      width: clamp(300px, 44vw, 500px);
+      transform: translateX(-50%) translateY(80vh);
+      background: linear-gradient(170deg, #fdf8f0 0%, #f5eed9 50%, #efe5c8 100%);
+      border-radius: 3px;
+      padding: clamp(2.5rem, 5vw, 4rem) clamp(2.5rem, 6vw, 4.5rem);
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.08),
+        0 4px 12px rgba(0,0,0,0.1),
+        0 12px 40px rgba(0,0,0,0.12);
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .letter::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 3px;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 28px,
+          rgba(180,160,130,0.12) 28px,
+          rgba(180,160,130,0.12) 29px
+        );
+      pointer-events: none;
+    }
+
+    .letter::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(225deg, rgba(0,0,0,0.04) 50%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .letter-fold {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(160,140,110,0.2) 15%,
+        rgba(160,140,110,0.35) 50%,
+        rgba(160,140,110,0.2) 85%,
+        transparent 100%
+      );
+      pointer-events: none;
+    }
+
+    .letter-fold-1 { top: 33%; }
+    .letter-fold-2 { top: 66%; }
+
+    .letter-greeting {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      color: #4a2020;
+      margin-bottom: 0.6em;
+      line-height: 1.2;
+    }
+
+    .letter-divider {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, #8b2e3d, #c9a96e);
+      border: none;
+      margin-bottom: 1.2em;
+      border-radius: 1px;
+    }
+
+    .letter-text {
+      font-family: 'Lora', serif;
+      font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+      color: #3d3028;
+      line-height: 1.85;
+      margin-bottom: 1em;
+    }
+
+    .letter-text:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .letter-signature {
+      margin-top: 2em;
+      text-align: right;
+    }
+
+    .letter-sign-name {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-style: italic;
+      font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+      color: #4a2020;
+    }
+
+    .letter-sign-title {
+      font-family: 'Lora', serif;
+      font-size: clamp(0.7rem, 1.2vw, 0.82rem);
+      color: #8a7a68;
+      margin-top: 0.2em;
+    }
+
+    .letter-seal {
+      position: absolute;
+      bottom: clamp(16px, 3vw, 28px);
+      right: clamp(16px, 3vw, 28px);
+      width: clamp(52px, 8vw, 72px);
+      height: clamp(52px, 8vw, 72px);
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow:
+        0 2px 8px rgba(107,29,42,0.25),
+        inset 0 1px 2px rgba(255,255,255,0.1);
+      border: 2px solid #6b1d2a;
+      transform: scale(0.7) rotate(-15deg);
+    }
+
+    .letter-seal img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .letter-seal-fallback {
+      display: none;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 38% 35%, #8b2e3d 0%, #6b1d2a 100%);
+      color: rgba(255,255,255,0.9);
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(0.85rem, 1.6vw, 1.2rem);
+      letter-spacing: 0.04em;
+    }
+      /* ── Passport ── */
+    #team {
+      height: 200vh;
+      pointer-events: auto;
+    }
+
+    .passport-scene {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1800px;
+      pointer-events: none;
+    }
+
+    .passport-book {
+      position: relative;
+      width: clamp(320px, 44vw, 480px);
+      aspect-ratio: 3/4;
+      transform-style: preserve-3d;
+      opacity: 0;
+      transform: translateY(50px) scale(0.9);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .passport-book.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .passport-book.done {
+      opacity: 0;
+      transform: translateY(-30px) scale(0.92);
+      pointer-events: none;
+    }
+
+    /* ── Passport Nav Buttons ── */
+    .passport-nav-row {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .passport-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: clamp(44px, 6vw, 58px);
+      height: clamp(44px, 6vw, 58px);
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: rgba(255,255,255,0.85);
+      font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+      line-height: 1;
+      font-family: 'Avenir', 'Inter', sans-serif;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease, background 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+    }
+
+    .passport-nav-label {
+      display: none;
+    }
+
+    .passport-nav:hover {
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .passport-nav:active {
+      transform: translateY(-50%) scale(0.94);
+    }
+
+    .passport-prev {
+      left: calc(50% - clamp(160px, 22vw, 240px) - clamp(30px, 4vw, 46px));
+    }
+
+    .passport-next {
+      right: calc(50% - clamp(160px, 22vw, 240px) - clamp(30px, 4vw, 46px));
+    }
+
+    .passport-scene.active .passport-nav {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── Passport Cover ── */
+    .passport-cover {
+      position: absolute;
+      inset: 0;
+      border-radius: 6px;
+      background: linear-gradient(145deg, #7a1a2e 0%, #5c1422 40%, #4a1020 100%);
+      box-shadow:
+        0 8px 32px rgba(0,0,0,0.5),
+        0 2px 8px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6%;
+      padding: 12% 10%;
+      backface-visibility: hidden;
+      z-index: 10;
+      transform-origin: left center;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.5s ease;
+    }
+
+    .passport-cover.open {
+      transform: rotateY(-160deg);
+      opacity: 0;
+    }
+
+    .passport-cover::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 1.5px solid rgba(212,175,55,0.3);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .passport-cover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 6px;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          rgba(255,255,255,0.008) 2px,
+          rgba(255,255,255,0.008) 4px
+        );
+      pointer-events: none;
+    }
+
+    .passport-emblem {
+      width: clamp(80px, 14vw, 120px);
+      height: clamp(80px, 14vw, 120px);
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      border: 2px solid rgba(212,175,55,0.4);
+      background: rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .passport-cover-logo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .passport-cover-text {
+      text-align: center;
+      color: #ffffff;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+
+    .passport-cover-country {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.55rem, 1.4vw, 0.75rem);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .passport-cover-title {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(1rem, 2.8vw, 1.6rem);
+      letter-spacing: 0.08em;
+    }
+
+    .passport-cover-sub {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: clamp(0.4rem, 1vw, 0.55rem);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .passport-biometric {
+      position: absolute;
+      bottom: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: clamp(24px, 4vw, 32px);
+      height: clamp(20px, 3.5vw, 28px);
+      border: 1.5px solid rgba(212,175,55,0.4);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .passport-biometric::before {
+      content: '';
+      width: 60%;
+      height: 50%;
+      border: 1px solid rgba(212,175,55,0.4);
+      border-radius: 50%;
+    }
+
+    /* ── Passport Pages ── */
+    .passport-pages {
+      position: absolute;
+      inset: 0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .passport-page {
+      position: absolute;
+      inset: 0;
+      border-radius: 6px;
+      background: linear-gradient(170deg, #faf6ed 0%, #f5f0e3 50%, #efe8d6 100%);
+      box-shadow:
+        0 4px 20px rgba(0,0,0,0.3),
+        0 1px 4px rgba(0,0,0,0.15);
+      backface-visibility: hidden;
+      opacity: 0;
+      transform: rotateY(-90deg);
+      transform-origin: left center;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+      overflow: hidden;
+      padding: clamp(20px, 4vw, 32px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .passport-page.active {
+      opacity: 1;
+      transform: rotateY(0deg);
+      z-index: 5;
+    }
+
+    .passport-page.flipped {
+      opacity: 0;
+      transform: rotateY(-120deg);
+      z-index: 1;
+    }
+
+    .passport-page.next {
+      opacity: 0;
+      transform: rotateY(90deg);
+      z-index: 3;
+    }
+
+    .passport-page.prev {
+      opacity: 0;
+      transform: rotateY(-90deg);
+      z-index: 1;
+    }
+
+    /* Page content */
+    .passport-page-header {
+      text-align: center;
+      padding-bottom: clamp(8px, 1.5vw, 14px);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      margin-bottom: clamp(8px, 1.5vw, 14px);
+    }
+
+    .passport-page-country {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.45rem, 1vw, 0.6rem);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #5c1422;
+    }
+
+    .passport-page-type {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(0.6rem, 1.4vw, 0.85rem);
+      color: #5c1422;
+      letter-spacing: 0.1em;
+    }
+
+    .passport-page-body {
+      display: flex;
+      gap: clamp(10px, 2vw, 18px);
+      flex: 1;
+      min-height: 0;
+    }
+
+    .passport-photo-area {
+      flex: 0 0 clamp(70px, 14vw, 110px);
+      aspect-ratio: 3/4;
+      border: 2px solid rgba(0,0,0,0.12);
+      border-radius: 4px;
+      background: linear-gradient(135deg, #e8e0d0 0%, #ddd5c4 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      height:14vh;
+    }
+
+    .passport-photo-initials {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      color: rgba(92,20,34,0.2);
+      user-select: none;
+    }
+
+    .passport-photo-area::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(0,0,0,0.01) 3px,
+          rgba(0,0,0,0.01) 4px
+        );
+      pointer-events: none;
+    }
+
+    .passport-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 0;
+    }
+
+    .passport-field {
+      margin-bottom: clamp(4px, 1vw, 8px);
+    }
+
+    .passport-field-label {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: clamp(0.35rem, 0.8vw, 0.45rem);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.35);
+      margin-bottom: 1px;
+    }
+
+    .passport-field-value {
+      font-family: 'Lora', serif;
+      font-weight: 600;
+      font-size: clamp(0.6rem, 1.3vw, 0.85rem);
+      color: #1a1a1a;
+      line-height: 1.3;
+      padding-bottom: 3px;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .passport-dept-stamp {
+      position: absolute;
+      top: clamp(16px, 3vw, 28px);
+      right: clamp(16px, 3vw, 28px);
+      width: clamp(50px, 9vw, 70px);
+      height: clamp(50px, 9vw, 70px);
+      border-radius: 50%;
+      border: 2.5px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(-18deg);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .passport-dept-stamp-text {
+      font-family: 'Inter', sans-serif;
+      font-weight: 900;
+      font-size: clamp(0.35rem, 0.8vw, 0.5rem);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .passport-mrz {
+      margin-top: auto;
+      padding-top: clamp(6px, 1vw, 10px);
+      border-top: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .passport-mrz-line {
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      font-size: clamp(0.38rem, 0.85vw, 0.52rem);
+      color: #1a1a1a;
+      letter-spacing: 0.12em;
+      line-height: 1.5;
+      word-break: break-all;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .passport-page-number {
+      position: absolute;
+      bottom: clamp(8px, 1.5vw, 14px);
+      right: clamp(14px, 2.5vw, 22px);
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: clamp(0.4rem, 0.9vw, 0.55rem);
+      color: rgba(0,0,0,0.2);
+    }
+
+    /* Guilloche pattern overlay */
+    .passport-guilloche {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.04;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(92,20,34,1) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 30%, rgba(92,20,34,0.6) 0%, transparent 40%),
+        repeating-conic-gradient(
+          from 0deg at 50% 50%,
+          transparent 0deg,
+          rgba(92,20,34,0.3) 1deg,
+          transparent 2deg
+        );
+    }
+
+    /* Watermark */
+    .passport-watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-25deg);
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      color: rgba(92,20,34,0.025);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Holographic strip */
+    .passport-hologram {
+      position: absolute;
+      bottom: clamp(40px, 8vw, 60px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: clamp(3px, 0.6vw, 5px);
+      border-radius: 2px;
+      background: linear-gradient(
+        90deg,
+        rgba(212,175,55,0.1),
+        rgba(180,220,255,0.2),
+        rgba(212,175,55,0.1),
+        rgba(180,220,255,0.15),
+        rgba(212,175,55,0.1)
+      );
+      background-size: 200% 100%;
+      animation: holoShimmer 3s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes holoShimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Page counter */
+    .passport-counter {
+      position: absolute;
+      bottom: -36px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: clamp(0.5rem, 1vw, 0.65rem);
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.15em;
+      white-space: nowrap;
+    }
+
+    /* Dept colors */
+    .dept-yonetim { border-color: #6b1d2a; color: #6b1d2a; }
+    .dept-finans { border-color: #1a6b3a; color: #1a6b3a; }
+    .dept-pr { border-color: #1a4a8a; color: #1a4a8a; }
+    .dept-it { border-color: #5a2d82; color: #5a2d82; }
+    .dept-lojistik { border-color: #b86e1a; color: #b86e1a; }
+    .dept-admin { border-color: #6b4a1a; color: #6b4a1a; }
+    .dept-guvenlik { border-color: #1a2a5c; color: #1a2a5c; }
+
+    /* ── Mobile (must come after base rules) ── */
+    @media (max-width: 768px) {
+      .navbar-links { display: none; }
+      .navbar-hamburger { display: flex; }
+
+      .passport-scene {
+        top: 20vh;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 0;
+        perspective: 1400px;
+      }
+
+      .passport-book {
+        width: clamp(280px, 84vw, 360px);
+        margin-top: 0;
+      }
+
+      .passport-nav-row {
+        position: static;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        flex-direction: row;
+        gap: clamp(12px, 3vw, 24px);
+        width: min(clamp(280px, 84vw, 360px), 100%);
+        margin-top: clamp(20px, 6vh, 44px);
+        pointer-events: none;
+      }
+
+      .passport-nav {
+        position: static;
+        transform: none;
+        flex: 1;
+        width: auto;
+        height: clamp(46px, 6.5vh, 56px);
+        padding: 0 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.10);
+        box-shadow: none;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        color: #fff;
+        font-size: clamp(0.9rem, 3.8vw, 1.05rem);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        gap: 6px;
+        justify-content: space-between;
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .passport-prev { flex-direction: row; }
+
+      .passport-next { flex-direction: row-reverse; }
+
+      .passport-nav-label {
+        display: block;
+        flex: 1;
+        text-align: center;
+        font-family: 'Inter', 'Avenir', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.9em;
+      }
+
+      .passport-nav-arrow {
+        font-size: 1.5em;
+        line-height: 1;
+        opacity: 0.95;
+      }
+
+      .passport-nav:hover { background: rgba(255,255,255,0.18); }
+
+      .passport-nav:active {
+        transform: scale(0.97);
+        background: rgba(255,255,255,0.22);
+      }
+
+      .passport-scene.active .passport-nav {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .passport-counter {
+        position: static;
+        margin-top: clamp(14px, 4vh, 24px);
+      }
+    }
+
+</style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <a href="#hero" class="navbar-brand">HASAL PARLAMENTO</a>
+    <ul class="navbar-links">
+      <li><a href="#hero" class="active" data-section="0">Ana Sayfa</a></li>
+      <li><a href="#about" data-section="1">Hakkımızda</a></li>
+      <li><a href="#team" data-section="2">Ekibimiz</a></li>
+      <li><a href="#commissions" data-section="3">Komisyonlar</a></li>
+      <li><a href="#faq" data-section="4">Sıkça Sorulan Sorular</a></li>
+      <li><a href="#apply" data-section="5">Başvuru</a></li>
+    </ul>
+    <div class="navbar-hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div class="navbar-mobile" id="mobile-menu">
+    <a href="#hero" data-section="0">Ana Sayfa</a>
+    <a href="#about" data-section="1">Hakkımızda</a>
+    <a href="#team" data-section="2">Ekibimiz</a>
+    <a href="#commissions" data-section="3">Komisyonlar</a>
+    <a href="#faq" data-section="4">Sıkça Sorulan Sorular</a>
+    <a href="#apply" data-section="5">Başvuru</a>
+  </div>
+
+  <div id="progress-bar"></div>
+
+  <div id="scroll-hint">
+    Aşağı kaydır
+    <span>↓</span>
+  </div>
+
+  <div class="scroll-container" id="scroll-container">
+    <div class="section hero" id="hero">
+      <div class="hero-card">
+        <h1 class="hero-title">HASAL<br>PARLAMENTO</h1>
+        <p class="hero-subtitle">Hüseyin Avni Sözen Anadolu Lisesi</p>
+        <p class="hero-date">4 – 5 – 6 Aralık</p>
+        <a href="#apply" class="hero-btn"><span>Hemen Başvur</span></a>
+      </div>
+    </div>
+    <div class="section" id="about">
+      <div class="about-scene">
+        <div class="envelope">
+          <div class="envelope-flap" id="envelope-flap">
+            <div class="envelope-flap-face"></div>
+            <div class="wax-seal" id="wax-seal">
+              <div class="wax-seal-outer">
+                <img src="logo.jpg" alt="HP" class="wax-seal-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <span class="wax-seal-text">HP</span>
+              </div>
+              <div class="wax-seal-crack" id="wax-crack"></div>
+            </div>
+          </div>
+          <div class="envelope-body">
+            <div class="envelope-inner-v"></div>
+          </div>
+        </div>
+        <div class="letter" id="letter-out">
+            <div class="letter-fold letter-fold-1"></div>
+            <div class="letter-fold letter-fold-2"></div>
+            <p class="letter-greeting">Hoşgeldiniz</p>
+            <hr class="letter-divider">
+            <p class="letter-text">
+              Hüseyin Avni Sözen Anadolu Lisesi Parlamento Kulübü olarak
+              sizleri 4-5-6 Aralık tarihlerinde düzenlenecek olan
+              HASAL Parlamanto etkinliğimize davet ediyoruz.
+            </p>
+            <p class="letter-text">
+              Bu yıl ilk kez düzenleyeceğimiz etkinliğimizde farklı
+              komisyonlarda güncel sorunlarını tartışacak,
+              çözüm yolları üreteceğiz.
+            </p>
+            <p class="letter-text">
+              Siyasi bilinci artırmak, gençlerin demokratik süreçlere
+              katılmasını sağlamak ve farklı bakış açılarını bir araya
+              getirmek amacıyla yola çıkıyoruz.
+            </p>
+            <div class="letter-signature">
+              <div class="letter-sign-name">HASAL Parlamanto</div>
+              <div class="letter-sign-title">Organizasyon Ekibi</div>
+            </div>
+            <div class="letter-seal">
+              <img src="logo.jpg" alt="HP" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+              <div class="letter-seal-fallback"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section" id="team">
+      <div class="passport-scene" id="passport-scene">
+        <div class="passport-book" id="passport-book">
+          <div class="passport-cover" id="passport-cover">
+            <div class="passport-emblem">
+              <img src="logo.jpg" alt="HP" class="passport-cover-logo" onerror="this.style.display='none'">
+            </div>
+            <div class="passport-cover-text">
+              <div class="passport-cover-country">HASAL PARLAMENTO</div>
+              <div class="passport-cover-title">EKİBİMİZ</div>
+              <div class="passport-cover-sub">Hüseyin Avni Sözen A.L</div>
+            </div>
+            <div class="passport-biometric"></div>
+          </div>
+          <div class="passport-pages" id="passport-pages"></div>
+        </div>
+        <div class="passport-nav-row" id="passport-nav-row">
+          <button class="passport-nav passport-prev" id="passport-prev" aria-label="Önceki">
+            <span class="passport-nav-arrow">‹</span>
+            <span class="passport-nav-label">Önceki</span>
+          </button>
+          <button class="passport-nav passport-next" id="passport-next" aria-label="Sonraki">
+            <span class="passport-nav-label">Sonraki</span>
+            <span class="passport-nav-arrow">›</span>
+          </button>
+        </div>
+        <div class="passport-counter" id="passport-counter"></div>
+      </div>
+    </div>
+    <div class="section" id="commissions"><div class="section-label">Komisyonlar</div></div>
+    <div class="section" id="faq"><div class="section-label">Sıkça Sorulan Sorular</div></div>
+    <div class="section" id="apply"><div class="section-label">Başvuru</div></div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    // ── Keyframes ──
+    const isMobile = window.innerWidth < 768;
+
+    const pcKeyframes = [
+      { position: { x: 0.447, y: -0.0324, z: 4.7638 }, target: { x: 0.5091, y: -0.8967, z: 2.4878 }, fov: 45 },
+      { position: { x: 2.7582, y: -1.9597, z: 3.6689 }, target: { x: 1.9145, y: -2.2874, z: 1.8854 }, fov: 45 },
+      { position: { x: -5.4658, y: -1.9684, z: -1.737 }, target: { x: 2.4478, y: -2.488, z: -1.3511 }, fov: 45 },
+      { position: { x: 0.3817, y: -1.5246, z: -4.5217 }, target: { x: 0.5557, y: -3.2987, z: -1.3812 }, fov: 45 },
+      { position: { x: 0.287, y: -1.6729, z: -4.174 }, target: { x: -1.2069, y: -2.9002, z: -2.4986 }, fov: 45 },
+      { position: { x: 0.287, y: -1.6729, z: -4.174 }, target: { x: -1.2069, y: -2.9002, z: -2.4986 }, fov: 45 }
+    ];
+
+    const mobileKeyframes = [
+      { position: { x: 0.447, y: -0.0324, z: 4.7638 }, target: { x: 0.5091, y: -0.8967, z: 2.4878 }, fov: 50 },
+      { position: { x: 2.7582, y: -1.9597, z: 3.6689 }, target: { x: 1.9145, y: -2.2874, z: 1.8854 }, fov: 50 },
+      { position: { x: -5.4658, y: -1.9684, z: -1.737 }, target: { x: 2.4478, y: -2.488, z: -1.3511 }, fov: 50 },
+      { position: { x: 0.3179, y: -1.2234, z: -4.8028 }, target: { x: -0.0051, y: -3.0989, z: -1.3017 }, fov: 50 },
+      { position: { x: 0.4538, y: -1.5459, z: -4.3365 }, target: { x: -1.2069, y: -2.9002, z: -2.4986 }, fov: 44 },
+      { position: { x: 0.4538, y: -1.5459, z: -4.3365 }, target: { x: -1.2069, y: -2.9002, z: -2.4986 }, fov: 44 }
+    ];
+
+    const keyframes = isMobile ? mobileKeyframes : pcKeyframes;
+
+    // ── Renderer ──
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.prepend(renderer.domElement);
+
+    // ── Scene ──
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87ceeb);
+    scene.fog = new THREE.Fog(0x87ceeb, 40, 100);
+
+    // ── Camera ──
+    const camera = new THREE.PerspectiveCamera(keyframes[0].fov, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(keyframes[0].position.x, keyframes[0].position.y, keyframes[0].position.z);
+    const cameraTarget = new THREE.Vector3(keyframes[0].target.x, keyframes[0].target.y, keyframes[0].target.z);
+    camera.lookAt(cameraTarget);
+
+    // ── Lights ──
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(10, 20, 10);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(1024, 1024);
+    scene.add(dirLight);
+    scene.add(new THREE.HemisphereLight(0x87ceeb, 0x362a28, 0.4));
+
+    // ── Load GLB ──
+    const loader = new GLTFLoader();
+    loader.load('parliament.glb', (gltf) => {
+      const model = gltf.scene;
+      model.traverse(c => { if (c.isMesh) c.castShadow = true; });
+      const box = new THREE.Box3().setFromObject(model);
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const scale = 15 / Math.max(size.x, size.y, size.z);
+      model.scale.setScalar(scale);
+      model.position.sub(center.multiplyScalar(scale));
+      model.position.y -= box.min.y * scale;
+      scene.add(model);
+    }, undefined, (err) => console.error('Model yüklenemedi:', err));
+
+    // ── Navbar ──
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const navLinks = document.querySelectorAll('.navbar-links a, .navbar-mobile a');
+    const sectionLabels = document.querySelectorAll('.section-label');
+    const progressBar = document.getElementById('progress-bar');
+    const scrollHint = document.getElementById('scroll-hint');
+    const sectionIds = ['hero', 'about', 'team', 'commissions', 'faq', 'apply'];
+
+    hamburger.addEventListener('click', () => {
+      mobileMenu.classList.toggle('open');
+    });
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        mobileMenu.classList.remove('open');
+        if (passportState !== 'idle') resetPassport();
+        const id = link.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if (!el) return;
+        let top;
+        if (id === 'about') {
+          top = el.offsetTop + window.innerHeight * 0.4;
+        } else {
+          const contentCenter = el.offsetTop + el.offsetHeight / 2;
+          top = contentCenter - window.innerHeight / 2;
+        }
+        window.scrollTo({ top, behavior: 'smooth' });
+      });
+    });
+
+    // ── Passport ──
+    const passportScene = document.getElementById('passport-scene');
+    const passportBook = document.getElementById('passport-book');
+    const passportPages = document.getElementById('passport-pages');
+    const passportCover = document.getElementById('passport-cover');
+    const passportCounter = document.getElementById('passport-counter');
+    const passportPrev = document.getElementById('passport-prev');
+    const passportNext = document.getElementById('passport-next');
+    const teamSection = document.getElementById('team');
+    let passportData = [];
+    let passportState = 'idle';
+    let passportPageIndex = 0;
+
+    const deptClassMap = {
+      'Yönetim': 'dept-yonetim',
+      'Finans': 'dept-finans',
+      'PR': 'dept-pr',
+      'IT': 'dept-it',
+      'Lojistik': 'dept-lojistik',
+      'Admin': 'dept-admin',
+      'Güvenlik': 'dept-guvenlik'
+    };
+
+    function getInitials(name) {
+      return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    function generateMRZ(name, idx) {
+      const parts = name.split(' ');
+      const surname = parts[parts.length - 1].toUpperCase().replace(/Ç/g,'C').replace(/Ğ/g,'G').replace(/İ/g,'I').replace(/Ö/g,'O').replace(/Ş/g,'S').replace(/Ü/g,'U');
+      const given = parts.slice(0, -1).join(' ').toUpperCase().replace(/Ç/g,'C').replace(/Ğ/g,'G').replace(/İ/g,'I').replace(/Ö/g,'O').replace(/Ş/g,'S').replace(/Ü/g,'U');
+      const pnr = `HP${String(2024).slice(2)}${String(idx + 1).padStart(3, '0')}`;
+      const pad = (s, n) => (s + '<'.repeat(n)).slice(0, n);
+      return [
+        `P<TUR<<${pad(surname, 18)}`,
+        `${pad(pnr, 9)}0<<0000000<0000000`
+      ];
+    }
+
+    async function loadTeam() {
+      try {
+        const res = await fetch('team.json');
+        const data = await res.json();
+        passportData = data.members;
+        buildPassport();
+      } catch (e) {
+        console.error('Team JSON yüklenemedi:', e);
+      }
+    }
+
+    function buildPassport() {
+      passportPages.innerHTML = '';
+      passportData.forEach((member, i) => {
+        const page = document.createElement('div');
+        page.className = 'passport-page';
+        const [mrz1, mrz2] = generateMRZ(member.name, i);
+        const initials = getInitials(member.name);
+        const deptClass = deptClassMap[member.dept] || 'dept-yonetim';
+        const pnr = `HP${String(2024).slice(2)}${String(i + 1).padStart(3, '0')}`;
+
+        page.innerHTML = `
+          <div class="passport-guilloche"></div>
+          <div class="passport-watermark">PARLAMENTO</div>
+          <div class="passport-hologram"></div>
+          <div class="passport-page-header">
+            <div class="passport-page-country">Hasal Parlamento '27</div>
+            <div class="passport-page-type">Diplomatik Kimlik</div>
+          </div>
+          <div class="passport-page-body">
+            <div class="passport-photo-area">
+              <span class="passport-photo-initials">${initials}</span>
+            </div>
+            <div class="passport-info">
+              <div>
+                <div class="passport-field">
+                  <div class="passport-field-label">Adı Soyadı</div>
+                  <div class="passport-field-value">${member.name}</div>
+                </div>
+                <div class="passport-field">
+                  <div class="passport-field-label">Unvanı</div>
+                  <div class="passport-field-value">${member.title}</div>
+                </div>
+                <div class="passport-field">
+                  <div class="passport-field-label">Bölüm</div>
+                  <div class="passport-field-value">${member.dept}</div>
+                </div>
+                <div class="passport-field">
+                  <div class="passport-field-label">Kimlik No</div>
+                  <div class="passport-field-value">${pnr}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="passport-dept-stamp ${deptClass}">
+            <div class="passport-dept-stamp-text">${member.dept}<br>Departmanı</div>
+          </div>
+          <div class="passport-mrz">
+            <div class="passport-mrz-line">${mrz1}</div>
+            <div class="passport-mrz-line">${mrz2}</div>
+          </div>
+          <div class="passport-page-number">${i + 1} / ${passportData.length}</div>
+        `;
+        passportPages.appendChild(page);
+      });
+    }
+
+    function showPassportPage(idx) {
+      const pages = passportPages.querySelectorAll('.passport-page');
+      pages.forEach((p, i) => {
+        p.classList.remove('active', 'flipped', 'next');
+        if (i < idx) p.classList.add('flipped');
+        else if (i === idx) p.classList.add('active');
+        else p.classList.add('next');
+      });
+      if (passportCounter) {
+        passportCounter.textContent = `${idx + 1} / ${passportData.length}`;
+      }
+    }
+
+    function enterPassportCover() {
+      if (passportState === 'pages') return;
+      passportState = 'cover';
+      passportCover.classList.remove('open');
+      passportPageIndex = 0;
+      setAllPagesHidden();
+      passportBook.classList.add('visible');
+      passportBook.classList.remove('done');
+      passportScene.classList.add('active');
+      coverShown = true;
+    }
+
+    function enterPassportPages() {
+      if (passportState !== 'cover') return;
+      passportState = 'pages';
+      passportPageIndex = 0;
+      passportCover.classList.add('open');
+      setTimeout(() => {
+        showPassportPage(0);
+      }, 100);
+    }
+
+    function showPassportPageFromButtons(dir) {
+      if (passportState === 'done') {
+        passportState = 'cover';
+        enterPassportPages();
+        return;
+      }
+      if (passportState === 'cover') {
+        enterPassportPages();
+        return;
+      }
+      if (passportState !== 'pages') return;
+      const newIdx = passportPageIndex + dir;
+      if (newIdx === -1) {
+        passportState = 'cover';
+        passportPageIndex = 0;
+        passportCover.classList.remove('open');
+        setAllPagesHidden();
+        return;
+      }
+      if (newIdx >= passportData.length) {
+        exitPassport();
+        return;
+      }
+      passportPageIndex = newIdx;
+      showPassportPage(newIdx);
+    }
+
+    passportPrev.addEventListener('click', () => showPassportPageFromButtons(-1));
+    passportNext.addEventListener('click', () => showPassportPageFromButtons(1));
+
+    function exitPassport() {
+      if (passportState === 'done') return;
+      passportState = 'done';
+      passportCover.classList.remove('open');
+      passportPageIndex = 0;
+      setAllPagesHidden();
+      cameraFrozen = false;
+    }
+
+    function resetPassport() {
+      passportState = 'idle';
+      coverShown = false;
+      cameraFrozen = false;
+      passportPageIndex = 0;
+      passportCover.classList.remove('open');
+      setAllPagesHidden();
+      passportBook.classList.remove('visible', 'done');
+      passportScene.classList.remove('active');
+    }
+
+    function setAllPagesHidden() {
+      passportPages.querySelectorAll('.passport-page').forEach(p => {
+        p.classList.remove('active', 'flipped', 'next');
+      });
+    }
+
+    loadTeam();
+
+    // ── Scroll ──
+    let scrollProgress = 0;
+    let targetScrollProgress = 0;
+
+    function onScroll() {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      targetScrollProgress = docHeight > 0 ? scrollTop / docHeight : 0;
+
+      const progressBar = document.getElementById('progress-bar');
+      const scrollHint = document.getElementById('scroll-hint');
+      const navLinks = document.querySelectorAll('.navbar-links a, .navbar-mobile a');
+      const sectionIds = ['hero', 'about', 'team', 'commissions', 'faq', 'apply'];
+
+      progressBar.style.width = (targetScrollProgress * 100) + '%';
+      if (scrollTop > 50) scrollHint.style.opacity = '0';
+
+      const currentSection = Math.round(targetScrollProgress * (sectionIds.length - 1));
+      navLinks.forEach(link => {
+        const idx = parseInt(link.dataset.section);
+        link.classList.toggle('active', idx === currentSection);
+      });
+
+      document.querySelectorAll('.section-label').forEach((el) => {
+        const section = el.closest('.section');
+        const rect = section.getBoundingClientRect();
+        const inView = rect.top < window.innerHeight * 0.7 && rect.bottom > window.innerHeight * 0.3;
+        el.classList.toggle('visible', inView);
+      });
+    }
+
+    // ── Envelope ──
+    const envelopeFlap = document.getElementById('envelope-flap');
+    const waxSeal = document.getElementById('wax-seal');
+    const waxCrack = document.getElementById('wax-crack');
+    const letterOut = document.getElementById('letter-out');
+    const aboutSection = document.getElementById('about');
+
+    function animateEnvelope() {
+      if (!aboutSection || !envelopeFlap) return;
+
+      const rect = aboutSection.getBoundingClientRect();
+      const sectionH = aboutSection.offsetHeight;
+      const scrolled = -rect.top;
+      const scrollable = sectionH - window.innerHeight;
+      const raw = Math.max(0, Math.min(1, scrolled / scrollable));
+
+      function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+      const crackRaw = Math.max(0, Math.min(1, (raw - 0.35) / 0.2));
+      if (waxCrack) {
+        waxCrack.style.opacity = easeOut(crackRaw);
+        waxSeal.style.transform = `translateX(-50%) scale(${1 + easeOut(crackRaw) * 0.15}) rotate(${easeOut(crackRaw) * 8}deg)`;
+      }
+      if (waxSeal) {
+        waxSeal.style.opacity = 1 - easeOut(Math.max(0, Math.min(1, (raw - 0.5) / 0.15)));
+      }
+      const flapRaw = Math.max(0, Math.min(1, (raw - 0.5) / 0.25));
+      envelopeFlap.style.transform = `rotateX(${easeOut(flapRaw) * 180}deg)`;
+      const letterRaw = Math.max(0, Math.min(1, (raw - 0.6) / 0.3));
+      if (letterOut) {
+        letterOut.style.transform = `translateX(-50%) translateY(${(1 - easeOut(letterRaw)) * 80}vh)`;
+        letterOut.style.opacity = Math.min(1, easeOut(letterRaw) * 1.5);
+        if (easeOut(letterRaw) > 0) letterOut.style.pointerEvents = 'auto';
+      }
+    }
+
+    function onScrollCombined() {
+      onScroll();
+      animateEnvelope();
+    }
+
+    window.addEventListener('scroll', onScrollCombined, { passive: true });
+    onScrollCombined();
+
+    // ── Resize ──
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ── Smooth camera ──
+    const smoothPos = new THREE.Vector3(keyframes[0].position.x, keyframes[0].position.y, keyframes[0].position.z);
+    const smoothTarget = new THREE.Vector3(keyframes[0].target.x, keyframes[0].target.y, keyframes[0].target.z);
+    let smoothFov = keyframes[0].fov;
+
+
+    let cameraFrozen = false;
+    let coverShown = false;
+
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      scrollProgress += (targetScrollProgress - scrollProgress) * 0.06;
+
+      const totalSegments = keyframes.length - 1;
+      const rawT = scrollProgress * totalSegments;
+      const segmentIndex = Math.min(Math.floor(rawT), totalSegments - 1);
+      const segmentProgress = rawT - segmentIndex;
+
+      const from = keyframes[segmentIndex];
+      const to = keyframes[Math.min(segmentIndex + 1, totalSegments)];
+      const t = easeInOutCubic(Math.min(segmentProgress, 1));
+
+      const teamRect = teamSection ? teamSection.getBoundingClientRect() : null;
+      const teamPinned = teamRect && teamRect.top <= 0 && teamRect.bottom > 0;
+      const teamPast = teamRect && teamRect.bottom < 0;
+      const inTeam = teamPinned && !teamPast;
+
+      if (inTeam) {
+        if (!coverShown) {
+          coverShown = true;
+          enterPassportCover();
+        }
+      } else {
+        if (passportState !== 'idle') {
+          passportState = 'idle';
+          passportBook.classList.remove('visible');
+          passportScene.classList.remove('active');
+          passportCover.classList.remove('open');
+          passportPageIndex = 0;
+          setAllPagesHidden();
+        }
+        coverShown = false;
+        cameraFrozen = false;
+      }
+
+      const nextPos = new THREE.Vector3(from.position.x, from.position.y, from.position.z);
+      const nextTarget = new THREE.Vector3(from.target.x, from.target.y, from.target.z);
+      nextPos.lerpVectors(nextPos, new THREE.Vector3(to.position.x, to.position.y, to.position.z), t);
+      nextTarget.lerpVectors(nextTarget, new THREE.Vector3(to.target.x, to.target.y, to.target.z), t);
+      const nextFov = from.fov + (to.fov - from.fov) * t;
+
+      smoothPos.lerp(nextPos, 0.12);
+      smoothTarget.lerp(nextTarget, 0.12);
+      smoothFov += (nextFov - smoothFov) * 0.12;
+
+      camera.position.copy(smoothPos);
+      camera.fov = smoothFov;
+      camera.updateProjectionMatrix();
+      camera.lookAt(smoothTarget);
+
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
